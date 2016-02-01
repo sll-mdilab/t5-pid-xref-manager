@@ -1,0 +1,80 @@
+package net.sllmdilab.t5xrefmanager.config;
+
+import java.util.Arrays;
+
+import org.mitre.oauth2.introspectingfilter.IntrospectingTokenService;
+import org.mitre.oauth2.introspectingfilter.service.IntrospectionAuthorityGranter;
+import org.mitre.oauth2.introspectingfilter.service.IntrospectionConfigurationService;
+import org.mitre.oauth2.introspectingfilter.service.impl.SimpleIntrospectionAuthorityGranter;
+import org.mitre.oauth2.introspectingfilter.service.impl.StaticIntrospectionConfigurationService;
+import org.mitre.oauth2.model.RegisteredClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+
+@Configuration
+@EnableResourceServer
+public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
+
+	@Value("${T5_XREF_OAUTH_INTROSPECTION_URL}")
+	private String introspectionUrl;
+	
+	@Value("${T5_XREF_OAUTH_CLIENT_ID}")
+	private String clientId;
+	
+	@Value("${T5_XREF_OAUTH_CLIENT_SECRET}")
+	private String clientSecret;
+	
+	@Bean
+	public IntrospectionConfigurationService introspectionConfigurationService() {
+		StaticIntrospectionConfigurationService service = new StaticIntrospectionConfigurationService();
+		service.setIntrospectionUrl(introspectionUrl);
+
+		RegisteredClient client = new RegisteredClient();
+		client.setClientId(clientId);
+		client.setClientSecret(clientSecret);
+
+		service.setClientConfiguration(client);
+
+		return service;
+	}
+
+	@Bean
+	public IntrospectingTokenService introspectingTokenService() {
+		IntrospectingTokenService service = new IntrospectingTokenService();
+		service.setIntrospectionConfigurationService(introspectionConfigurationService());
+		service.setIntrospectionAuthorityGranter(introspectionAuthorityGranter());
+		
+		return service;
+	}
+
+	@Bean
+	public IntrospectionAuthorityGranter introspectionAuthorityGranter() {
+		SimpleIntrospectionAuthorityGranter authGranter = new SimpleIntrospectionAuthorityGranter();
+
+		authGranter.setAuthorities(Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
+
+		return authGranter;
+	}
+
+	@Override
+	public void configure(HttpSecurity http) throws Exception {
+		http	.anonymous()
+				.and()
+				.authorizeRequests()
+					.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+					.antMatchers("/fhir/metadata").permitAll()
+					.antMatchers("/**").authenticated();
+	}
+
+	@Override
+	public void configure(ResourceServerSecurityConfigurer resourceConf) throws Exception {
+		
+	}
+}
