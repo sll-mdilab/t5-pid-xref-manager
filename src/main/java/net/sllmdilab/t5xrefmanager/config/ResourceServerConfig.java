@@ -2,6 +2,7 @@ package net.sllmdilab.t5xrefmanager.config;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.mitre.oauth2.introspectingfilter.IntrospectingTokenService;
 import org.mitre.oauth2.introspectingfilter.service.IntrospectionAuthorityGranter;
 import org.mitre.oauth2.introspectingfilter.service.IntrospectionConfigurationService;
@@ -65,12 +66,22 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-		http	.anonymous()
-				.and()
-				.authorizeRequests()
-					.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-					.antMatchers("/fhir/metadata").permitAll()
-					.antMatchers("/**").authenticated();
+		if(StringUtils.isBlank(clientId)) {
+			http
+			.anonymous()
+			.and()
+			.authorizeRequests()
+				.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.antMatchers("/**").permitAll();
+		} else {
+			http
+			.anonymous()
+			.and()
+			.authorizeRequests()
+				.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.antMatchers("/fhir/metadata").permitAll()
+				.antMatchers("/**").authenticated();
+		}
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import ca.uhn.fhir.model.dstu2.resource.DeviceMetric;
 import ca.uhn.fhir.model.dstu2.resource.DiagnosticReport;
 import ca.uhn.fhir.model.dstu2.resource.Encounter;
 import ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare;
+import ca.uhn.fhir.model.dstu2.resource.ListResource;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
 import ca.uhn.fhir.model.dstu2.resource.Order;
@@ -209,6 +210,11 @@ public class T5XRefManagerApplicationConfig {
 	@Bean
 	public FhirbaseResourceDao<DeviceMetric> deviceMetricDao() {
 		return new FhirbaseResourceDao<>(DeviceMetric.class);
+	}
+	
+	@Bean
+	public FhirbaseResourceDao<ListResource> listResouceDao() {
+		return new FhirbaseResourceDao<>(ListResource.class);
 	}
 	
 	@Bean
