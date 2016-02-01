@@ -27,6 +27,11 @@ The application uses the following environment variables:
 * `T5_XREF_TIMESHIFT_START` - (Optional) Start of a master time interval which to use when fetching observations. For longer query intervals, observation from the master time interval will be repeated. Timestamps will be modified to make observations appear as they have occurred during the query interval.
 * `T5_XREF_TIMESHIFT_END` - (Optional) End of the master time interval.
 * `T5_XREF_PATIENT_IDS` - (Optional) A list of patiend IDs for which timeshift shall be applied. If empty, timeshif will be applied for all patient IDs.
+* `T5_XREF_OAUTH_AUTHORIZE_URI`- The URI which clients should use for authorization. This will be included in the FHIR manifest.
+* `T5_XREF_OAUTH_TOKEN_URI` - The URI which clients should use for obtaining an auth token from an auth code. This will be included in the FHIR manifest.
+* `T5_XREF_OAUTH_INTROSPECTION_URL` - The URL to use for performing introspection (verification) of auth tokens.
+* `T5_XREF_OAUTH_CLIENT_ID` - The client id which identifies this service.
+* `T5_XREF_OAUTH_CLIENT_SECRET` - (Optional) The client secret to use when accessing the introspection endpoint.
 
 ## References
 * FHIRbase https://github.com/fhirbase/fhirbase-plv8
