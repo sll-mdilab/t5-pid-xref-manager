@@ -19,8 +19,6 @@ import net.sllmdilab.t5xrefmanager.dao.FhirbaseResourceDao.Params;
 @Component
 public class EncounterResourceProvider extends BaseResourceProvider<Encounter> {
 
-	private static final String SF_SERVICE_PROVIDER = "-service-provider";
-
 	public EncounterResourceProvider() {
 		super(Encounter.class);
 	}

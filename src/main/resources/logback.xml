@@ -7,7 +7,7 @@
     </layout>
   </appender>
   
-    <logger name="org.springframework.jdbc.core.JdbcTemplate" level="DEBUG" additivity="false">
+    <logger name="org.springframework.jdbc.core.JdbcTemplate" level="INFO" additivity="false">
     <appender-ref ref=">DEBUG" />
   </logger>
   
