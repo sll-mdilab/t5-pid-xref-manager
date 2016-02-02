@@ -1,5 +1,6 @@
 package net.sllmdilab.t5xrefmanager.dao;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.ZoneId;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,28 +25,33 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
+import ca.uhn.fhir.model.base.resource.ResourceMetadataMap;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.model.dstu2.resource.OperationOutcome;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.parser.DataFormatException;
 import ca.uhn.fhir.parser.IParser;
-import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import net.sllmdilab.commons.exceptions.DatabaseException;
 
 public class FhirbaseResourceDao<T extends IResource> {
 	private static final Logger logger = LoggerFactory.getLogger(FhirbaseResourceDao.class);
-	
+
 	private static final String initQuery = "SET plv8.start_proc = 'plv8_init'";
 	public static final String FHIRBASE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
 
 	protected final String resourceName;
 	protected final Class<T> clazz;
 	protected IParser jsonParser;
-	
+
 	@Autowired
 	protected FhirContext fhirContext;
 
@@ -59,6 +66,64 @@ public class FhirbaseResourceDao<T extends IResource> {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private String escapeKeyword(String name) {
+		if(StringUtils.equalsIgnoreCase(name, "order")) {
+			return "\\\"" + name + "\\\"";
+		} else {
+			return name;
+		}
+	}
+
+	private String removeMetadataExtensionsFromBundle(String jsonString) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode root;
+		try {
+			root = (ObjectNode) mapper.readTree(jsonString);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to parse Json", e);
+		}
+		
+		ArrayNode entries = (ArrayNode) root.get("entry");
+		for (int i = 0; i < entries.size(); ++i) {
+			ObjectNode entry = (ObjectNode) entries.get(i);
+			ObjectNode resource = (ObjectNode) entry.get("resource");
+
+			ObjectNode meta = (ObjectNode) resource.get("meta");
+
+			if (meta != null) {
+				meta.remove("extension");
+			}
+		}
+
+		try {
+			return mapper.writeValueAsString(root);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Json serializing failed.", e);
+		}
+	}
+	
+	private String removeMetadataExtensionsFromResource(String jsonString) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode root;
+		try {
+			root = (ObjectNode) mapper.readTree(jsonString);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to parse Json", e);
+		}
+
+		ObjectNode meta = (ObjectNode) root.get("meta");
+
+		if (meta != null) {
+			meta.remove("extension");
+		}
+
+		try {
+			return mapper.writeValueAsString(root);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Json serializing failed.", e);
+		}
+	}
 
 	@PostConstruct
 	public void postConstructInit() {
@@ -70,7 +135,9 @@ public class FhirbaseResourceDao<T extends IResource> {
 	}
 
 	public void insert(T resource) {
-		String jsonString = "{ \"resource\":" + encode(resource) + "}";
+		ResourceMetadataMap metadata = resource.getResourceMetadata();
+
+		String jsonString = "{\"allowId\":true, \"resource\":" + encode(resource) + "}";
 		String insertQuery = "SET plv8.start_proc = 'plv8_init' ; SELECT fhir_create_resource( '" + jsonString + "' )";
 
 		try {
@@ -111,7 +178,7 @@ public class FhirbaseResourceDao<T extends IResource> {
 
 		return result.get(0);
 	}
-	
+
 	@Transactional
 	public void delete(String id) {
 		String initQuery = "SET plv8.start_proc = 'plv8_init'";
@@ -135,18 +202,18 @@ public class FhirbaseResourceDao<T extends IResource> {
 		@Override
 		public T mapRow(ResultSet rs, int index) throws SQLException {
 			try {
-				return jsonParser.parseResource(clazz, rs.getString(1));
+				return jsonParser.parseResource(clazz, removeMetadataExtensionsFromResource(rs.getString(1)));
 			} catch (DataFormatException e) {
 				OperationOutcome outcome = jsonParser.parseResource(OperationOutcome.class, rs.getString(1));
 
 				logger.warn("Got OperationOutcome from FHIRBase.");
-				
-				if("not-found".equals(outcome.getIssueFirstRep().getCode())) {
+
+				if ("not-found".equals(outcome.getIssueFirstRep().getCode())) {
 					throw new ResourceNotFoundException("Resouce not found.", outcome);
 				} else {
 					throw e;
 				}
-				
+
 			}
 		}
 	}
@@ -154,14 +221,14 @@ public class FhirbaseResourceDao<T extends IResource> {
 	private class BundleRowMapper implements RowMapper<Bundle> {
 		@Override
 		public Bundle mapRow(ResultSet rs, int index) throws SQLException {
-			return jsonParser.parseResource(Bundle.class, rs.getString(1));
+			return jsonParser.parseResource(Bundle.class, removeMetadataExtensionsFromBundle(rs.getString(1)));
 		}
 	}
 
 	@Transactional
 	public List<IResource> search(Params parameters) {
-		String readQuery = "SELECT fhir_search('{\"resourceType\": \"" + resourceName + "\", \"queryString\": \""
-				+ parameters.buildParamString() + "\"}')";
+		String readQuery = "SELECT fhir_search('{\"resourceType\": \"" + escapeKeyword(resourceName)
+				+ "\", \"queryString\": \"" + parameters.buildParamString() + "\"}')";
 
 		List<Bundle> results;
 		try {
@@ -175,16 +242,16 @@ public class FhirbaseResourceDao<T extends IResource> {
 			throw new DatabaseException("Search query failed, " + results.size() + " rows returned.");
 		}
 
-		Bundle bundle = results.get(0); 
+		Bundle bundle = results.get(0);
 
 		List<IResource> resources = bundle.getEntry().stream().map(entry -> entry.getResource())
 				.collect(Collectors.toList());
 		return resources;
 	}
-	
+
 	public List<IResource> search(Params parameters, Set<Include> includes) {
 		StringBuilder stringBuilder = new StringBuilder();
-		for(Include includeParam : includes) {
+		for (Include includeParam : includes) {
 			stringBuilder.append(includeParam.getValue());
 			stringBuilder.append(",");
 		}
@@ -206,7 +273,8 @@ public class FhirbaseResourceDao<T extends IResource> {
 	public static class Params {
 		private Map<String, List<String>> paramMap = new HashMap<String, List<String>>();
 
-		private Params() {}
+		private Params() {
+		}
 
 		public static Params of(String name, Object value) {
 			Params params = new Params();
@@ -219,11 +287,11 @@ public class FhirbaseResourceDao<T extends IResource> {
 			params.add(name, operator, value);
 			return params;
 		}
-		
+
 		public static Params empty() {
 			return new Params();
 		}
-		
+
 		public List<String> getValues(String name) {
 			return paramMap.get(name);
 		}
@@ -235,7 +303,7 @@ public class FhirbaseResourceDao<T extends IResource> {
 		public Params add(String name, String operator, Object value) {
 			String valueString;
 			if (value instanceof Date) {
-				valueString = convertToParamString((Date)value);
+				valueString = convertToParamString((Date) value);
 			} else {
 				valueString = value.toString();
 			}

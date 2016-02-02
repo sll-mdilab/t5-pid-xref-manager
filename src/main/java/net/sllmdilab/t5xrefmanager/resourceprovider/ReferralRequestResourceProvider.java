@@ -28,8 +28,7 @@ public class ReferralRequestResourceProvider extends BaseResourceProvider<Referr
 	public List<IResource> search(@OptionalParam(name = ReferralRequest.SP_REQUESTER) ReferenceParam requester,
 			@OptionalParam(name = ReferralRequest.SP_RECIPIENT) ReferenceParam recipient,
 			@OptionalParam(name = ReferralRequest.SP_STATUS) StringParam status,
-			@OptionalParam(name = ReferralRequest.SP_PATIENT) ReferenceParam patient, @IncludeParam(allow = {
-					ReferralRequest.SP_REQUESTER, ReferralRequest.SP_RECIPIENT, SP_ENCOUNTER, SP_SUPPORTING_INFORMATION}) Set<Include> includeParams) {
+			@OptionalParam(name = ReferralRequest.SP_PATIENT) ReferenceParam patient, @IncludeParam Set<Include> includeParams) {
 		Params params = Params.empty();
 		if (requester != null) {
 			params.add(ReferralRequest.SP_REQUESTER, requester.getValue());
