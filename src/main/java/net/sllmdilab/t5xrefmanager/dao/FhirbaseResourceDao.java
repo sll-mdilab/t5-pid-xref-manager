@@ -237,6 +237,8 @@ public class FhirbaseResourceDao<T extends IResource> {
 
 	@Transactional
 	public List<IResource> search(Params parameters) {
+		parameters.add("_count", "2000");
+		
 		String readQuery = "SELECT fhir_search('{\"resourceType\": \"" + escapeKeyword(resourceName)
 				+ "\", \"queryString\": \"" + parameters.buildParamString() + "\"}')";
 
