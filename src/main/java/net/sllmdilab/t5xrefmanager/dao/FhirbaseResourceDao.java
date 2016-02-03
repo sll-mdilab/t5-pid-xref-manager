@@ -75,6 +75,11 @@ public class FhirbaseResourceDao<T extends IResource> {
 		}
 	}
 
+	/**
+	 * Extensions in metadata is yet not supported by HAPI-FHIR. This is a temporary workaround.
+	 * @param jsonString A json string containing a resource bundle.
+	 * @return The same bundle with any extensions in the meta-field removed for each entry.
+	 */
 	private String removeMetadataExtensionsFromBundle(String jsonString) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode root;
@@ -99,10 +104,15 @@ public class FhirbaseResourceDao<T extends IResource> {
 		try {
 			return mapper.writeValueAsString(root);
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException("Json serializing failed.", e);
+			throw new RuntimeException("Json serialization failed.", e);
 		}
 	}
 	
+	/**
+	 * Extensions in metadata is yet not supported by HAPI-FHIR. This is a temporary workaround.
+	 * @param jsonString A json string containing a single fhir resource.
+	 * @return The same resource with any extensions in the meta-field removed.
+	 */
 	private String removeMetadataExtensionsFromResource(String jsonString) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode root;
@@ -121,7 +131,7 @@ public class FhirbaseResourceDao<T extends IResource> {
 		try {
 			return mapper.writeValueAsString(root);
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException("Json serializing failed.", e);
+			throw new RuntimeException("Json serialization failed.", e);
 		}
 	}
 
