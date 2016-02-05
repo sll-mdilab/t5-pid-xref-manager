@@ -22,6 +22,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.model.dstu2.resource.Appointment;
+import ca.uhn.fhir.model.dstu2.resource.BodySite;
 import ca.uhn.fhir.model.dstu2.resource.ClinicalImpression;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Device;
@@ -37,6 +39,7 @@ import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.resource.Procedure;
+import ca.uhn.fhir.model.dstu2.resource.QuestionnaireResponse;
 import ca.uhn.fhir.model.dstu2.resource.ReferralRequest;
 import net.sllmdilab.commons.converter.ObservationToT5XmlConverter;
 import net.sllmdilab.commons.converter.T5QueryToFHIRConverter;
@@ -215,6 +218,21 @@ public class T5XRefManagerApplicationConfig {
 	@Bean
 	public FhirbaseResourceDao<ListResource> listResouceDao() {
 		return new FhirbaseResourceDao<>(ListResource.class);
+	}
+	
+	@Bean
+	public FhirbaseResourceDao<BodySite> bodySiteDao() {
+		return new FhirbaseResourceDao<>(BodySite.class);
+	}
+	
+	@Bean
+	public FhirbaseResourceDao<QuestionnaireResponse> questionnaireResponseDao() {
+		return new FhirbaseResourceDao<>(QuestionnaireResponse.class);
+	}
+	
+	@Bean
+	public FhirbaseResourceDao<Appointment> appointmentDao() {
+		return new FhirbaseResourceDao<>(Appointment.class);
 	}
 	
 	@Bean
