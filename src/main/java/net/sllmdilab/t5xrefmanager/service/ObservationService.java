@@ -20,6 +20,7 @@ import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.rest.api.SortSpec;
 import net.sllmdilab.commons.exceptions.T5Exception;
 import net.sllmdilab.commons.util.T5FHIRUtils;
 import net.sllmdilab.t5xrefmanager.converter.SqlObservationToFhirConverter;
@@ -222,7 +223,7 @@ public class ObservationService {
 	}
 
 	public List<Observation> searchByPatient(String patientId, String observationCode, Date start, Date end,
-			int sampleRateMilli) {
+			int sampleRateMilli, Integer count, SortSpec sortSpec) {
 		List<Observation> result;
 
 		if (shouldTimeShift(patientId)) {
