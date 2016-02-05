@@ -17,6 +17,8 @@ import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import ca.uhn.fhir.rest.annotation.Sort;
+import ca.uhn.fhir.rest.api.SortSpec;
 import net.sllmdilab.commons.domain.SqlDevice;
 import net.sllmdilab.commons.domain.SqlObservation;
 

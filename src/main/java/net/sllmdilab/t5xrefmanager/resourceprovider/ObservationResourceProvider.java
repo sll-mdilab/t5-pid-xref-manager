@@ -7,9 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ca.uhn.fhir.model.dstu2.resource.Observation;
+import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.annotation.Sort;
+import ca.uhn.fhir.rest.api.SortOrderEnum;
+import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.NumberParam;
 import ca.uhn.fhir.rest.param.StringParam;
@@ -36,7 +40,9 @@ public class ObservationResourceProvider implements IResourceProvider {
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationCode,
 			@OptionalParam(name = "-summary") StringParam summary,
-			@OptionalParam(name = "-samplingPeriod") NumberParam sampleRate) throws Exception {
+			@OptionalParam(name = "-samplingPeriod") NumberParam sampleRate,
+			@Sort SortSpec sortSpec,
+			@Count Integer count) throws Exception {
 		Date start = T5FHIRUtils.getStartTimeFromNullableRange(dateRange);
 		Date end = T5FHIRUtils.getEndTimeFromNullableRange(dateRange);
 
@@ -48,7 +54,7 @@ public class ObservationResourceProvider implements IResourceProvider {
 			throw new InvalidRequestException("Observation type code missing.");
 		} else {
 			return observationService.searchByPatient(patientId.getValue(), observationCode.getValue(), start, end,
-					getSamplingPeriodFromParam(sampleRate));
+					getSamplingPeriodFromParam(sampleRate), count, sortSpec);
 		}
 	}
 
