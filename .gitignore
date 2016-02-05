@@ -42,3 +42,5 @@ local.properties
 # Locally stored "Eclipse launch configurations"
 *.launch
 /bin/
+
+extra/.ebextensions/https.config
