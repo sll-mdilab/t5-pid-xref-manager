@@ -20,6 +20,7 @@ import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
 import net.sllmdilab.commons.exceptions.T5Exception;
 import net.sllmdilab.commons.util.T5FHIRUtils;
@@ -98,9 +99,23 @@ public class ObservationService {
 	}
 
 	private static class ObservationTimestampComparator implements Comparator<Observation> {
+		private final SortOrderEnum sortOrder;
+		
+		public ObservationTimestampComparator() {
+			sortOrder = SortOrderEnum.ASC;
+		}
+		
+		public ObservationTimestampComparator(SortOrderEnum sortOrder) {
+			this.sortOrder = sortOrder;
+		}
+		
 		@Override
 		public int compare(Observation o1, Observation o2) {
-			return Long.compare(getTimestamp(o1.getEffective()), getTimestamp(o2.getEffective()));
+			if(sortOrder == SortOrderEnum.ASC) {
+				return Long.compare(getTimestamp(o1.getEffective()), getTimestamp(o2.getEffective()));
+			} else {
+				return Long.compare(getTimestamp(o2.getEffective()), getTimestamp(o1.getEffective()));
+			}
 		}
 	}
 
@@ -223,7 +238,7 @@ public class ObservationService {
 	}
 
 	public List<Observation> searchByPatient(String patientId, String observationCode, Date start, Date end,
-			int sampleRateMilli, Integer count, SortSpec sortSpec) {
+			int sampleRateMilli, SortSpec sortSpec, Integer count) {
 		List<Observation> result;
 
 		if (shouldTimeShift(patientId)) {
@@ -231,13 +246,34 @@ public class ObservationService {
 		} else {
 			result = performPatientIdentification(patientId, observationCode, start, end);
 		}
-		return limitSamplingPeriod(result, start, end, sampleRateMilli);
+		return sortAndLimitCount(limitSamplingPeriod(result, start, end, sampleRateMilli), sortSpec, count);
+	}
+	
+	/**
+	 * This method changes the order of the incoming arguments.
+	 * 
+	 * @param observations
+	 * @param sortSpec
+	 * @param count
+	 * @return
+	 */
+	public List<Observation> sortAndLimitCount(List<Observation> observations, SortSpec sortSpec, Integer count) {
+		if(sortSpec != null) {
+			observations.sort(new ObservationTimestampComparator(sortSpec.getOrder()));
+		}
+		
+		if(count != null) {
+			return observations.subList(0, count);
+		}
+		
+		return observations;
+		
 	}
 
 	public List<Observation> searchByDevice(String deviceId, String observationCode, Date start, Date end,
-			int samplingPeriodMilli) {
+			int samplingPeriodMilli, SortSpec sortSpec, Integer count) {
 		List<Observation> result = searchObservations(deviceId, IdType.DEVICE, observationCode, start, end);
-		return limitSamplingPeriod(result, start, end, samplingPeriodMilli);
+		return sortAndLimitCount(limitSamplingPeriod(result, start, end, samplingPeriodMilli), sortSpec, count);
 	}
 
 	private boolean shouldTimeShift(String patientId) {

@@ -12,7 +12,6 @@ import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.annotation.Sort;
-import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.NumberParam;
@@ -53,8 +52,10 @@ public class ObservationResourceProvider implements IResourceProvider {
 		} else if (observationCode == null) {
 			throw new InvalidRequestException("Observation type code missing.");
 		} else {
+			validateCountParameter(count);
+			
 			return observationService.searchByPatient(patientId.getValue(), observationCode.getValue(), start, end,
-					getSamplingPeriodFromParam(sampleRate), count, sortSpec);
+					getSamplingPeriodFromParam(sampleRate), sortSpec, count);
 		}
 	}
 
@@ -67,7 +68,9 @@ public class ObservationResourceProvider implements IResourceProvider {
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationCode,
 			@OptionalParam(name = "-summary") StringParam summary,
-			@OptionalParam(name = "-samplingPeriod") NumberParam sampleRate) throws Exception {
+			@OptionalParam(name = "-samplingPeriod") NumberParam sampleRate,
+			@Sort SortSpec sortSpec,
+			@Count Integer count) throws Exception {
 
 		Date start = T5FHIRUtils.getStartTimeFromNullableRange(dateRange);
 		Date end = T5FHIRUtils.getEndTimeFromNullableRange(dateRange);
@@ -79,8 +82,17 @@ public class ObservationResourceProvider implements IResourceProvider {
 			if (observationCode == null) {
 				throw new InvalidRequestException("Observation type code missing.");
 			}
+			
+			validateCountParameter(count);
+			
 			return observationService.searchByDevice(deviceId.getValue(), observationCode.getValue(), start, end,
-					getSamplingPeriodFromParam(sampleRate));
+					getSamplingPeriodFromParam(sampleRate), sortSpec, count);
+		}
+	}
+	
+	private void validateCountParameter(Integer count) {
+		if(count != null && count < 0) {
+			throw new InvalidRequestException("_count parameter cannot be negative.");
 		}
 	}
 }
