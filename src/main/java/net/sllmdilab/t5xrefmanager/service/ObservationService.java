@@ -27,8 +27,8 @@ import net.sllmdilab.commons.util.T5FHIRUtils;
 import net.sllmdilab.t5xrefmanager.converter.SqlObservationToFhirConverter;
 import net.sllmdilab.t5xrefmanager.dao.FhirbaseResourceDao;
 import net.sllmdilab.t5xrefmanager.dao.FhirbaseResourceDao.Params;
-import net.sllmdilab.t5xrefmanager.dao.ObservationDao;
-import net.sllmdilab.t5xrefmanager.dao.ObservationDao.Code;
+import net.sllmdilab.t5xrefmanager.dao.ObservationSqlDao;
+import net.sllmdilab.t5xrefmanager.dao.ObservationSqlDao.Code;
 import net.sllmdilab.t5xrefmanager.resource.T5DeviceUseStatement;
 import net.sllmdilab.t5xrefmanager.util.TimeShift;
 import net.sllmdilab.t5xrefmanager.util.TimeShift.Interval;
@@ -38,13 +38,16 @@ public class ObservationService {
 	private FhirContext fhirContext;
 
 	@Autowired
-	private ObservationDao observationDao;
+	private ObservationSqlDao observationDao;
 
 	@Autowired
 	private SqlObservationToFhirConverter obsConverter;
 
 	@Autowired
 	private FhirbaseResourceDao<T5DeviceUseStatement> deviceUseStatementDao;
+	
+	@Autowired
+	private FhirbaseResourceDao<Observation> fhirbaseResourceDao;
 
 	private final Interval masterInterval;
 

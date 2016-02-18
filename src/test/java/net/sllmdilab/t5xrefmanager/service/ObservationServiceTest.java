@@ -35,7 +35,7 @@ import net.sllmdilab.commons.t5.validators.RosettaValidator;
 import net.sllmdilab.t5xrefmanager.converter.SqlObservationToFhirConverter;
 import net.sllmdilab.t5xrefmanager.dao.FhirbaseResourceDao;
 import net.sllmdilab.t5xrefmanager.dao.FhirbaseResourceDao.Params;
-import net.sllmdilab.t5xrefmanager.dao.ObservationDao;
+import net.sllmdilab.t5xrefmanager.dao.ObservationSqlDao;
 import net.sllmdilab.t5xrefmanager.resource.T5DeviceUseStatement;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,7 +58,7 @@ public class ObservationServiceTest {
 	private SqlObservationToFhirConverter mockObsConverter = new SqlObservationToFhirConverter(new RosettaValidator());
 	
 	@Mock
-	private ObservationDao mockObservationDao;
+	private ObservationSqlDao mockObservationDao;
 	
 	@Mock
 	private FhirbaseResourceDao<T5DeviceUseStatement> mockDeviceUseStatementDao = new FhirbaseResourceDao<>(T5DeviceUseStatement.class);

@@ -41,6 +41,6 @@ public class AppointmentResourceProvider extends BaseResourceProvider<Appointmen
 			}
 		}
 
-		return getResourceDao().search(params, includeParams);
+		return (List<IResource>) getResourceDao().search(params, includeParams);
 	}
 }

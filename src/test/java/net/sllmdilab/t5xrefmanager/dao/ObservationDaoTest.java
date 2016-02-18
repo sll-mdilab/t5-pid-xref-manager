@@ -36,7 +36,7 @@ public class ObservationDaoTest {
 	private T5QueryToFHIRConverter t5QueryToFhirConverter;
 
 	@InjectMocks
-	private ObservationDao observationDao;
+	private ObservationSqlDao observationDao;
 
 	@Before
 	public void init() throws Exception {

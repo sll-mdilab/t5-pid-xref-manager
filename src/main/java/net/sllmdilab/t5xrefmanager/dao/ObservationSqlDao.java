@@ -17,14 +17,12 @@ import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import ca.uhn.fhir.rest.annotation.Sort;
-import ca.uhn.fhir.rest.api.SortSpec;
 import net.sllmdilab.commons.domain.SqlDevice;
 import net.sllmdilab.commons.domain.SqlObservation;
 
 @Repository
-public class ObservationDao {
-	private static final Logger logger = LoggerFactory.getLogger(ObservationDao.class);
+public class ObservationSqlDao {
+	private static final Logger logger = LoggerFactory.getLogger(ObservationSqlDao.class);
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;

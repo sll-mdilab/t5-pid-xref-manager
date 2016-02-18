@@ -25,7 +25,7 @@ import net.sllmdilab.commons.domain.SqlObservation;
 import net.sllmdilab.commons.exceptions.XmlParsingException;
 import net.sllmdilab.commons.t5.validators.RosettaValidator;
 import net.sllmdilab.commons.util.T5FHIRUtils;
-import net.sllmdilab.t5xrefmanager.dao.ObservationDao.Code;
+import net.sllmdilab.t5xrefmanager.dao.ObservationSqlDao.Code;
 
 public class SqlObservationToFhirConverter {
 	private static Logger logger = LoggerFactory.getLogger(SqlObservationToFhirConverter.class);

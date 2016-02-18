@@ -18,7 +18,7 @@ import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import net.sllmdilab.commons.domain.SqlObservation;
 import net.sllmdilab.commons.t5.validators.RosettaValidator;
-import net.sllmdilab.t5xrefmanager.dao.ObservationDao.Code;
+import net.sllmdilab.t5xrefmanager.dao.ObservationSqlDao.Code;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SqlObservationToFhirConverterTest {

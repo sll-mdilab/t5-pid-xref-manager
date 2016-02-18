@@ -34,6 +34,7 @@ import ca.uhn.fhir.model.dstu2.resource.EpisodeOfCare;
 import ca.uhn.fhir.model.dstu2.resource.ListResource;
 import ca.uhn.fhir.model.dstu2.resource.Medication;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
+import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.dstu2.resource.Order;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
@@ -233,6 +234,11 @@ public class T5XRefManagerApplicationConfig {
 	@Bean
 	public FhirbaseResourceDao<Appointment> appointmentDao() {
 		return new FhirbaseResourceDao<>(Appointment.class);
+	}
+	
+	@Bean
+	public FhirbaseResourceDao<Observation> observationFirebaseDao() {
+		return new FhirbaseResourceDao<>(Observation.class);
 	}
 	
 	@Bean

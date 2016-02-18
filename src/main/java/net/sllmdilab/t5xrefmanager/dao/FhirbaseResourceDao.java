@@ -234,10 +234,17 @@ public class FhirbaseResourceDao<T extends IResource> {
 			return jsonParser.parseResource(Bundle.class, removeMetadataExtensionsFromBundle(rs.getString(1)));
 		}
 	}
+	
+	private void setDefaultResultCount(Params parameters) {
+		if(parameters.getValues("_count") != null) {
+			parameters.add("_count", Integer.toString(Integer.MAX_VALUE));
+		}
+	}
 
 	@Transactional
 	public List<IResource> search(Params parameters) {
-		parameters.add("_count", "2000");
+		
+		setDefaultResultCount(parameters);
 		
 		String readQuery = "SELECT fhir_search('{\"resourceType\": \"" + escapeKeyword(resourceName)
 				+ "\", \"queryString\": \"" + parameters.buildParamString() + "\"}')";
