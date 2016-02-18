@@ -83,7 +83,7 @@ public class ObservationServiceTest {
 		deviceUseStatement.setWhenUsed(periodDt);
 		when(mockDeviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
 	
-		observationService.searchByPatient(MOCK_PATIENT_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 0);
+		observationService.searchByPatient(MOCK_PATIENT_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 0, null, null);
 		
 		ArgumentCaptor<Params> paramsCaptor = ArgumentCaptor.forClass(Params.class);
 		verify(mockDeviceUseStatementDao).search(paramsCaptor.capture());
@@ -124,7 +124,7 @@ public class ObservationServiceTest {
 		
 		when(mockObservationDao.searchByDevice(any(), any(), any(), any())).thenReturn(Arrays.asList(sqlObs));
 		
-		List<Observation> result = observationService.searchByPatient(MOCK_PATIENT_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 50);
+		List<Observation> result = observationService.searchByPatient(MOCK_PATIENT_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 50, null, null);
 		assertEquals(2, result.size());
 		
 		ArgumentCaptor<Params> paramsCaptor = ArgumentCaptor.forClass(Params.class);
@@ -137,7 +137,7 @@ public class ObservationServiceTest {
 	
 	@Test
 	public void searchByDevice() {
-		observationService.searchByDevice(MOCK_DEVICE_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 0);
+		observationService.searchByDevice(MOCK_DEVICE_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 0, null, null);
 		
 		verify(mockObservationDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START), eq(MOCK_DATE_END));
 	}
