@@ -263,7 +263,7 @@ public class ObservationService {
 		}
 		
 		if(count != null) {
-			return observations.subList(0, count);
+			return observations.subList(0, Math.min(count, observations.size()));
 		}
 		
 		return observations;
