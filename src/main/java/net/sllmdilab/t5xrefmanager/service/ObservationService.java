@@ -22,6 +22,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import net.sllmdilab.commons.exceptions.T5Exception;
 import net.sllmdilab.commons.util.T5FHIRUtils;
 import net.sllmdilab.t5xrefmanager.converter.SqlObservationToFhirConverter;
@@ -250,6 +251,23 @@ public class ObservationService {
 			result = performPatientIdentification(patientId, observationCode, start, end);
 		}
 		return sortAndLimitCount(limitSamplingPeriod(result, start, end, sampleRateMilli), sortSpec, count);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Observation> searchFromFhirbase(String patientId, String observationTypeCode, Date start, Date end, Integer count) {
+		Params params = Params.empty();
+		
+		params.add(Observation.SP_CODE, observationTypeCode);
+	
+		params.add(Observation.SP_DATE, "ge", start);
+
+		params.add(Observation.SP_DATE, "le", end);
+		
+		if(count != null) {
+			params.add(FhirbaseResourceDao.SP_COUNT, count);
+		}
+
+		return (List<Observation>) (List<? extends IResource>) fhirbaseResourceDao.search(params);
 	}
 	
 	/**

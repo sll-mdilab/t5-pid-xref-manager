@@ -44,6 +44,8 @@ import net.sllmdilab.commons.exceptions.DatabaseException;
 
 public class FhirbaseResourceDao<T extends IResource> {
 	private static final Logger logger = LoggerFactory.getLogger(FhirbaseResourceDao.class);
+	
+	public static String SP_COUNT = "_count";
 
 	private static final String initQuery = "SET plv8.start_proc = 'plv8_init'";
 	public static final String FHIRBASE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";

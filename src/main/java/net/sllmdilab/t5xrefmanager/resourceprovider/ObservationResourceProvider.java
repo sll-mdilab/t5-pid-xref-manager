@@ -16,7 +16,7 @@ import ca.uhn.fhir.rest.annotation.Sort;
 import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.NumberParam;
-import ca.uhn.fhir.rest.param.QuantityParam;
+import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
@@ -29,6 +29,7 @@ import net.sllmdilab.t5xrefmanager.service.ObservationService;
 public class ObservationResourceProvider extends BaseResourceProvider<Observation> {
 	private static final String TRUE = "true";
 	private static final String SP_COMMENTS = "-comments";
+	private static final String SP_METHOD = "-method";
 
 	@Autowired
 	private ObservationService observationService;
@@ -44,20 +45,54 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 	@Search()
 	public List<Observation> searchAnnotation(@OptionalParam(name = Observation.SP_SUBJECT) TokenParam patientId,
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
-			@OptionalParam(name = Observation.SP_CODE) StringParam observationCode,
-			@RequiredParam(name = Observation.SP_VALUE_QUANTITY) StringParam valueQuantity, // Using StringParam because QuantityParam has a bug handling :missing
-			@RequiredParam(name = SP_COMMENTS) StringParam comments) {
+			@OptionalParam(name = Observation.SP_CODE) StringParam observationTypeCode,
+			// Using StringParam because QuantityParam has a bug handling :missing
+			@OptionalParam(name = Observation.SP_VALUE_QUANTITY) StringParam valueQuantity,
+			@OptionalParam(name = SP_COMMENTS) StringParam comments, @OptionalParam(name = SP_METHOD) TokenParam method,
+			@OptionalParam(name = Observation.SP_PERFORMER) ReferenceParam performer) {
 		Params params = Params.empty();
 
-		if (valueQuantity.getMissing() != null) {
-			params.add(Observation.SP_VALUE_QUANTITY + ":missing", valueQuantity.getMissing().toString());
-		} else {
-			throw new InvalidRequestException(Observation.SP_VALUE_QUANTITY + " only supported with :missing-modifier.");
+		if (valueQuantity != null) {
+			if (valueQuantity.getMissing() != null) {
+				params.add(Observation.SP_VALUE_QUANTITY + ":missing", valueQuantity.getMissing().toString());
+			} else {
+				throw new InvalidRequestException(
+						Observation.SP_VALUE_QUANTITY + " only supported with :missing-modifier.");
+			}
 		}
-		if (comments.getMissing() != null) {
-			params.add(SP_COMMENTS + ":missing", comments.getMissing().toString());
-		} else {
-			throw new InvalidRequestException(SP_COMMENTS + " only supported with :missing-modifier.");
+
+		if (valueQuantity != null) {
+			if (comments.getMissing() != null) {
+				params.add(SP_COMMENTS + ":missing", comments.getMissing().toString());
+			} else {
+				throw new InvalidRequestException(SP_COMMENTS + " only supported with :missing-modifier.");
+			}
+		}
+
+		if (patientId != null) {
+			params.add(Observation.SP_SUBJECT, patientId.getValue());
+		}
+
+		if (observationTypeCode != null) {
+			params.add(Observation.SP_CODE, observationTypeCode.getValue());
+		}
+
+		if (dateRange != null) {
+			if (dateRange.getLowerBoundAsInstant() != null) {
+				params.add(Observation.SP_DATE, "ge", dateRange.getLowerBoundAsInstant());
+			}
+
+			if (dateRange.getUpperBoundAsInstant() != null) {
+				params.add(Observation.SP_DATE, "le", dateRange.getUpperBoundAsInstant());
+			}
+		}
+
+		if (method != null) {
+			params.add(SP_METHOD, method.getValue());
+		}
+
+		if (performer != null) {
+			params.add(Observation.SP_PERFORMER, performer.getValue());
 		}
 
 		return (List<Observation>) (List<? extends IResource>) fhirbaseResourceDao.search(params);
