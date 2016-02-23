@@ -43,7 +43,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 
 	@SuppressWarnings("unchecked")
 	@Search()
-	public List<Observation> searchAnnotation(@OptionalParam(name = Observation.SP_SUBJECT) TokenParam patientId,
+	public List<Observation> searchAnnotations(@OptionalParam(name = Observation.SP_SUBJECT) TokenParam patientId,
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationTypeCode,
 			// Using StringParam because QuantityParam has a bug handling :missing
