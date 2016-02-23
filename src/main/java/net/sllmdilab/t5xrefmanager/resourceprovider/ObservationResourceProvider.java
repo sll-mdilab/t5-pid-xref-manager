@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.rest.annotation.Count;
@@ -52,22 +53,8 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 			@OptionalParam(name = Observation.SP_PERFORMER) ReferenceParam performer) {
 		Params params = Params.empty();
 
-		if (valueQuantity != null) {
-			if (valueQuantity.getMissing() != null) {
-				params.add(Observation.SP_VALUE_QUANTITY + ":missing", valueQuantity.getMissing().toString());
-			} else {
-				throw new InvalidRequestException(
-						Observation.SP_VALUE_QUANTITY + " only supported with :missing-modifier.");
-			}
-		}
-
-		if (comments != null) {
-			if (comments.getMissing() != null) {
-				params.add(SP_COMMENTS + ":missing", comments.getMissing().toString());
-			} else {
-				throw new InvalidRequestException(SP_COMMENTS + " only supported with :missing-modifier.");
-			}
-		}
+		addMissing(params,Observation.SP_VALUE_QUANTITY, valueQuantity);
+		addMissing(params, SP_COMMENTS, comments);
 
 		if (patientId != null) {
 			params.add(Observation.SP_SUBJECT, patientId.getValue());
@@ -92,6 +79,16 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 		}
 
 		return (List<Observation>) (List<? extends IResource>) fhirbaseResourceDao.search(params);
+	}
+
+	private void addMissing(Params params, String name, IQueryParameterType param) {
+		if (param != null) {
+			if (param.getMissing() != null) {
+				params.add(name + ":missing", param.getMissing().toString());
+			} else {
+				throw new InvalidRequestException(SP_COMMENTS + " only supported with :missing-modifier.");
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
