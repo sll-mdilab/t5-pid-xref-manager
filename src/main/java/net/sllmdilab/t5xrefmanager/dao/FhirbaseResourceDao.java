@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.api.Include;
-import ca.uhn.fhir.model.base.resource.ResourceMetadataMap;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.model.dstu2.resource.OperationOutcome;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -147,8 +146,6 @@ public class FhirbaseResourceDao<T extends IResource> {
 	}
 
 	public void insert(T resource) {
-		ResourceMetadataMap metadata = resource.getResourceMetadata();
-
 		String jsonString = "{\"allowId\":true, \"resource\":" + encode(resource) + "}";
 		String insertQuery = "SET plv8.start_proc = 'plv8_init' ; SELECT fhir_create_resource( '" + jsonString + "' )";
 
@@ -238,7 +235,7 @@ public class FhirbaseResourceDao<T extends IResource> {
 	}
 	
 	private void setDefaultResultCount(Params parameters) {
-		if(parameters.getValues("_count") != null) {
+		if(parameters.getValues("_count") == null) {
 			parameters.add("_count", Integer.toString(Integer.MAX_VALUE));
 		}
 	}

@@ -48,7 +48,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationTypeCode,
 			// Using StringParam because QuantityParam has a bug handling :missing
 			@OptionalParam(name = Observation.SP_VALUE_QUANTITY) StringParam valueQuantity,
-			@OptionalParam(name = SP_COMMENTS) StringParam comments, @OptionalParam(name = SP_METHOD) TokenParam method,
+			@RequiredParam(name = SP_COMMENTS) StringParam comments, 
 			@OptionalParam(name = Observation.SP_PERFORMER) ReferenceParam performer) {
 		Params params = Params.empty();
 
@@ -61,13 +61,47 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 			}
 		}
 
-		if (valueQuantity != null) {
+		if (comments != null) {
 			if (comments.getMissing() != null) {
 				params.add(SP_COMMENTS + ":missing", comments.getMissing().toString());
 			} else {
 				throw new InvalidRequestException(SP_COMMENTS + " only supported with :missing-modifier.");
 			}
 		}
+
+		if (patientId != null) {
+			params.add(Observation.SP_SUBJECT, patientId.getValue());
+		}
+
+		if (observationTypeCode != null) {
+			params.add(Observation.SP_CODE, observationTypeCode.getValue());
+		}
+
+		if (dateRange != null) {
+			if (dateRange.getLowerBoundAsInstant() != null) {
+				params.add(Observation.SP_DATE, "ge", dateRange.getLowerBoundAsInstant());
+			}
+
+			if (dateRange.getUpperBoundAsInstant() != null) {
+				params.add(Observation.SP_DATE, "le", dateRange.getUpperBoundAsInstant());
+			}
+		}
+		
+		if (performer != null) {
+			params.add(Observation.SP_PERFORMER, performer.getValue());
+		}
+
+		return (List<Observation>) (List<? extends IResource>) fhirbaseResourceDao.search(params);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Search()
+	public List<Observation> searchManualObservations(@OptionalParam(name = Observation.SP_SUBJECT) TokenParam patientId,
+			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
+			@OptionalParam(name = Observation.SP_CODE) StringParam observationTypeCode,
+			@RequiredParam(name = SP_METHOD) TokenParam method,
+			@OptionalParam(name = Observation.SP_PERFORMER) ReferenceParam performer) {
+		Params params = Params.empty();
 
 		if (patientId != null) {
 			params.add(Observation.SP_SUBJECT, patientId.getValue());
@@ -97,6 +131,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 
 		return (List<Observation>) (List<? extends IResource>) fhirbaseResourceDao.search(params);
 	}
+	
 
 	@Search()
 	public List<Observation> searchForPatient(@RequiredParam(name = Observation.SP_SUBJECT) TokenParam patientId,
