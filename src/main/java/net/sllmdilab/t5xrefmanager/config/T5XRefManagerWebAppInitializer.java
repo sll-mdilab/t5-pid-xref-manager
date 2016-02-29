@@ -17,6 +17,7 @@ public class T5XRefManagerWebAppInitializer implements WebApplicationInitializer
 		Dynamic filter = container.addFilter("CORS", "com.thetransactioncompany.cors.CORSFilter");
 		filter.addMappingForUrlPatterns(null, false, "/*");
 		filter.setInitParameter("cors.supportedMethods", "GET, PUT, POST, HEAD, OPTIONS, DELETE");
+		filter.setInitParameter("cors.exposedHeaders" , "Location");
 		
 		// Create the 'root' Spring application context
 		AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
