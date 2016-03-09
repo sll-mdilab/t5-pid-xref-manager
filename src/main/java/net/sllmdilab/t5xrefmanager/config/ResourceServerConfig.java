@@ -18,6 +18,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.web.header.HeaderWriterFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableResourceServer
@@ -81,7 +85,24 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 				.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.antMatchers("/fhir/metadata").permitAll()
 				.antMatchers("/**").authenticated();
+			
 		}
+		
+		http.addFilterBefore(corsFilter(), HeaderWriterFilter.class);
+	}
+	
+	@Bean
+	public CorsFilter corsFilter() {
+		CorsConfiguration corsConfiguration = new CorsConfiguration();
+		corsConfiguration.setAllowCredentials(true);
+		corsConfiguration.addExposedHeader("Location");
+		corsConfiguration.addAllowedMethod(CorsConfiguration.ALL);
+		corsConfiguration.addAllowedOrigin(CorsConfiguration.ALL);
+		corsConfiguration.addAllowedHeader(CorsConfiguration.ALL);
+
+		UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
+		corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+		return new CorsFilter(corsConfigurationSource);
 	}
 
 	@Override
