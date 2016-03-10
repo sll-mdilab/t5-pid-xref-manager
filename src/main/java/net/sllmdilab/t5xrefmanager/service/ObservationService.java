@@ -206,7 +206,7 @@ public class ObservationService {
 			Date minEnd = (whenUsed.getEnd() == null) || (whenUsed.getEnd().compareTo(end) > 0) ? end
 					: whenUsed.getEnd();
 
-			result.addAll(obsConverter.convert(patientId, patientId,
+			result.addAll(obsConverter.convert(patientId, deviceId,
 					observationDao.searchByDevice(deviceId, observationCode, maxStart, minEnd)));
 		}
 
