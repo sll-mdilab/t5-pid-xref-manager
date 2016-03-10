@@ -2,7 +2,6 @@ package net.sllmdilab.t5xrefmanager.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -58,10 +57,13 @@ public class ObservationServiceTest {
 	private SqlObservationToFhirConverter mockObsConverter = new SqlObservationToFhirConverter(new RosettaValidator());
 	
 	@Mock
-	private ObservationSqlDao mockObservationDao;
+	private ObservationSqlDao mockObservationSqlDao;
 	
 	@Mock
-	private FhirbaseResourceDao<T5DeviceUseStatement> mockDeviceUseStatementDao = new FhirbaseResourceDao<>(T5DeviceUseStatement.class);
+	private FhirbaseResourceDao<T5DeviceUseStatement> deviceUseStatementDao = new FhirbaseResourceDao<>(T5DeviceUseStatement.class);
+	
+	@Mock
+	private FhirbaseResourceDao<Observation> fhirbaseObservationDao = new FhirbaseResourceDao<>(Observation.class);
 	
 	@InjectMocks
 	private ObservationService observationService = new ObservationService(null, null, new ArrayList<String>());
@@ -70,7 +72,7 @@ public class ObservationServiceTest {
 	public void init() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		
-		mockDeviceUseStatementDao.postConstructInit();
+		deviceUseStatementDao.postConstructInit();
 	}
 	
 	@Test
@@ -81,16 +83,16 @@ public class ObservationServiceTest {
 		periodDt.setEnd(new DateTimeDt(MOCK_DATE_END2));
 		deviceUseStatement.setDevice(new ResourceReferenceDt(MOCK_DEVICE_ID));
 		deviceUseStatement.setWhenUsed(periodDt);
-		when(mockDeviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
+		when(deviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
 	
 		observationService.searchByPatient(MOCK_PATIENT_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 0, null, null);
 		
 		ArgumentCaptor<Params> paramsCaptor = ArgumentCaptor.forClass(Params.class);
-		verify(mockDeviceUseStatementDao).search(paramsCaptor.capture());
+		verify(deviceUseStatementDao).search(paramsCaptor.capture());
 		Params params = paramsCaptor.getValue();
 		assertThat(params.getValues(T5DeviceUseStatement.SP_PERIOD), is(Arrays.asList(MOCK_PARAM_START, MOCK_PARAM_END)));
 		
-		verify(mockObservationDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START2), eq(MOCK_DATE_END2));
+		verify(mockObservationSqlDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START2), eq(MOCK_DATE_END2));
 	}
 	
 	@Test
@@ -101,7 +103,7 @@ public class ObservationServiceTest {
 		periodDt.setEnd(new DateTimeDt(MOCK_DATE_END2));
 		deviceUseStatement.setDevice(new ResourceReferenceDt(MOCK_DEVICE_ID));
 		deviceUseStatement.setWhenUsed(periodDt);
-		when(mockDeviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
+		when(deviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
 		
 		SqlObservation[] sqlObs = new SqlObservation[3];
 		sqlObs[0] = new SqlObservation();
@@ -122,24 +124,24 @@ public class ObservationServiceTest {
 		sqlObs[2].setValue("0");
 		sqlObs[2].setStartTime(Date.from(Instant.ofEpochMilli(MOCK_DATE_START2.toInstant().toEpochMilli() + 52)));
 		
-		when(mockObservationDao.searchByDevice(any(), any(), any(), any())).thenReturn(Arrays.asList(sqlObs));
+		when(mockObservationSqlDao.searchByDevice(any(), any(), any(), any())).thenReturn(Arrays.asList(sqlObs));
 		
 		List<Observation> result = observationService.searchByPatient(MOCK_PATIENT_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 50, null, null);
 		assertEquals(2, result.size());
 		
 		ArgumentCaptor<Params> paramsCaptor = ArgumentCaptor.forClass(Params.class);
-		verify(mockDeviceUseStatementDao).search(paramsCaptor.capture());
+		verify(deviceUseStatementDao).search(paramsCaptor.capture());
 		Params params = paramsCaptor.getValue();
 		assertThat(params.getValues(T5DeviceUseStatement.SP_PERIOD), is(Arrays.asList(MOCK_PARAM_START, MOCK_PARAM_END)));
 		
-		verify(mockObservationDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START2), eq(MOCK_DATE_END2));
+		verify(mockObservationSqlDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START2), eq(MOCK_DATE_END2));
 	}
 	
 	@Test
 	public void searchByDevice() {
 		observationService.searchByDevice(MOCK_DEVICE_ID, MOCK_CODE, MOCK_DATE_START, MOCK_DATE_END, 0, null, null);
 		
-		verify(mockObservationDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START), eq(MOCK_DATE_END));
+		verify(mockObservationSqlDao).searchByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_CODE), eq(MOCK_DATE_START), eq(MOCK_DATE_END));
 	}
 	
 	@Test
@@ -150,22 +152,22 @@ public class ObservationServiceTest {
 		periodDt.setEnd(new DateTimeDt(MOCK_DATE_END2));
 		deviceUseStatement.setDevice(new ResourceReferenceDt(MOCK_DEVICE_ID));
 		deviceUseStatement.setWhenUsed(periodDt);
-		when(mockDeviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
+		when(deviceUseStatementDao.search(any())).thenReturn(Arrays.asList(deviceUseStatement));
 		
 		observationService.searchSummaryByPatient(MOCK_PATIENT_ID, MOCK_DATE_START, MOCK_DATE_END);
 		
 		ArgumentCaptor<Params> paramsCaptor = ArgumentCaptor.forClass(Params.class);
-		verify(mockDeviceUseStatementDao).search(paramsCaptor.capture());
+		verify(deviceUseStatementDao).search(paramsCaptor.capture());
 		Params params = paramsCaptor.getValue();
 		assertThat(params.getValues(T5DeviceUseStatement.SP_PERIOD), is(Arrays.asList(MOCK_PARAM_START, MOCK_PARAM_END)));
 		
-		verify(mockObservationDao).searchCodesByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_DATE_START2), eq(MOCK_DATE_END2));
+		verify(mockObservationSqlDao).searchCodesByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_DATE_START2), eq(MOCK_DATE_END2));
 	}
 	
 	@Test
 	public void searchSummaryByDevice() {
 		observationService.searchSummaryByDevice(MOCK_DEVICE_ID, MOCK_DATE_START, MOCK_DATE_END);
 		
-		verify(mockObservationDao).searchCodesByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_DATE_START), eq(MOCK_DATE_END));
+		verify(mockObservationSqlDao).searchCodesByDevice(eq(MOCK_DEVICE_ID), eq(MOCK_DATE_START), eq(MOCK_DATE_END));
 	}
 }

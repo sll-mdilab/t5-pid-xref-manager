@@ -50,7 +50,7 @@ public class ObservationService {
 	private FhirbaseResourceDao<T5DeviceUseStatement> deviceUseStatementDao;
 	
 	@Autowired
-	private FhirbaseResourceDao<Observation> fhirbaseResourceDao;
+	private FhirbaseResourceDao<Observation> fhirbaseObservationDao;
 
 	private final Interval masterInterval;
 
@@ -272,7 +272,7 @@ public class ObservationService {
 			params.add(FhirbaseResourceDao.SP_COUNT, count);
 		}
 
-		return (List<Observation>) (List<? extends IResource>) fhirbaseResourceDao.search(params);
+		return (List<Observation>) (List<? extends IResource>) fhirbaseObservationDao.search(params);
 	}
 	
 	/**
