@@ -28,9 +28,10 @@ import net.sllmdilab.t5xrefmanager.service.ObservationService;
 
 @Component
 public class ObservationResourceProvider extends BaseResourceProvider<Observation> {
-	private static final String TRUE = "true";
-	private static final String SP_COMMENTS = "-comments";
-	private static final String SP_METHOD = "-method";
+	public static final String MODIFIER_MISSING = ":missing";
+	public static final String TRUE = "true";
+	public static final String SP_COMMENTS = "-comments";
+	public static final String SP_METHOD = "-method";
 
 	@Autowired
 	private ObservationService observationService;
@@ -84,7 +85,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 	private void addMissing(Params params, String name, IQueryParameterType param) {
 		if (param != null) {
 			if (param.getMissing() != null) {
-				params.add(name + ":missing", param.getMissing().toString());
+				params.add(name + MODIFIER_MISSING, param.getMissing().toString());
 			} else {
 				throw new InvalidRequestException(SP_COMMENTS + " only supported with :missing-modifier.");
 			}

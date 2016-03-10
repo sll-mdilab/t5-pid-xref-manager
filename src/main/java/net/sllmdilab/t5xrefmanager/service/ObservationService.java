@@ -33,6 +33,9 @@ import net.sllmdilab.t5xrefmanager.resource.T5DeviceUseStatement;
 import net.sllmdilab.t5xrefmanager.util.TimeShift;
 import net.sllmdilab.t5xrefmanager.util.TimeShift.Interval;
 
+import static net.sllmdilab.t5xrefmanager.resourceprovider.ObservationResourceProvider.MODIFIER_MISSING;
+import static net.sllmdilab.t5xrefmanager.resourceprovider.ObservationResourceProvider.SP_METHOD;
+
 public class ObservationService {
 	@Autowired
 	private FhirContext fhirContext;
@@ -240,26 +243,30 @@ public class ObservationService {
 		return obsConverter.convertToObservationSummary(result);
 	}
 
-	public List<Observation> searchByPatient(String patientId, String observationCode, Date start, Date end,
+	public List<Observation> searchByPatient(String patientId, String observationTypeCode, Date start, Date end,
 			int sampleRateMilli, SortSpec sortSpec, Integer count) {
 		List<Observation> result;
 
 		if (shouldTimeShift(patientId)) {
-			result = timeshiftedSearch(patientId, IdType.PATIENT, observationCode, start, end);
+			result = timeshiftedSearch(patientId, IdType.PATIENT, observationTypeCode, start, end);
 		} else {
-			result = performPatientIdentification(patientId, observationCode, start, end);
+			result = performPatientIdentification(patientId, observationTypeCode, start, end);
 		}
+		
+		result.addAll(searchFromFhirbase(patientId, observationTypeCode, start, end, count));
+		
 		return sortAndLimitCount(limitSamplingPeriod(result, start, end, sampleRateMilli), sortSpec, count);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Observation> searchFromFhirbase(String patientId, String observationTypeCode, Date start, Date end, Integer count) {
-		Params params = Params.empty();
-		
-		params.add(Observation.SP_SUBJECT, patientId);
-		params.add(Observation.SP_CODE, observationTypeCode);
-		params.add(Observation.SP_DATE, "ge", start);
-		params.add(Observation.SP_DATE, "le", end);
+		Params params = Params
+			.of(Observation.SP_SUBJECT, patientId)
+			.add(Observation.SP_CODE, observationTypeCode)
+			.add(Observation.SP_DATE, "ge", start)
+			.add(Observation.SP_DATE, "le", end)
+			.add(SP_METHOD + MODIFIER_MISSING, true)
+			.add(Observation.SP_VALUE_QUANTITY + MODIFIER_MISSING, false);
 		
 		if(count != null) {
 			params.add(FhirbaseResourceDao.SP_COUNT, count);
