@@ -40,10 +40,21 @@ public class TimeShiftTest {
 		assertEquals(2, TimeShift.getNumIterations(master, Interval.of(10, 18)));
 		assertEquals(0, TimeShift.getNumIterations(master, Interval.of(9, 10)));
 		assertEquals(1, TimeShift.getNumIterations(master, Interval.of(9, 16)));
-		assertEquals(1, TimeShift.getNumIterations(master, Interval.of(9, 17)));
+		assertEquals(2, TimeShift.getNumIterations(master, Interval.of(9, 17)));
 		assertEquals(2, TimeShift.getNumIterations(master, Interval.of(9, 19)));
 	}
 	
+	
+	@Test
+	public void getNumIterationsBeforeMaster() {
+		Interval master = Interval.of(29, 35);
+		
+		assertEquals(2, TimeShift.getNumIterations(master, Interval.of(10, 18)));
+		assertEquals(0, TimeShift.getNumIterations(master, Interval.of(9, 10)));
+		assertEquals(1, TimeShift.getNumIterations(master, Interval.of(9, 16)));
+		assertEquals(2, TimeShift.getNumIterations(master, Interval.of(9, 17)));
+		assertEquals(2, TimeShift.getNumIterations(master, Interval.of(9, 19)));
+	}
 	@Test
 	public void shortIntervalWithinMaster() {
 		Interval master = Interval.of(5, 10);
