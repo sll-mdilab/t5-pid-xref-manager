@@ -43,12 +43,16 @@ public class TimeShift {
 	}
 	
 	public static long transformTimestampToMaster(Interval master, long timestamp) {
-		return master.start + (timestamp % master.length());
+		long mod = (timestamp - master.start) % master.length();
+		if(mod < 0) {
+			mod += master.length();
+		}
+		return master.start + mod;
 	}
 	
 	public static long transformTimestampFromMaster(Interval master, long startTimestamp, long timestamp, int iteration) {
 		long nearestIntervalStart = master.length() * ((startTimestamp - master.start)/master.length());
-		return nearestIntervalStart + timestamp  + master.length()*iteration;
+		return nearestIntervalStart + timestamp + master.length()*iteration;
 	}
 	
 	/**
@@ -58,7 +62,11 @@ public class TimeShift {
 	 * @return
 	 */
 	public static int getNumIterations(Interval master, Interval interval) {
-		long distanceFromIntervalStart = interval.start % master.length();
+		long distanceFromIntervalStart = (interval.start - master.start) % master.length();
+		if(distanceFromIntervalStart < 0) {
+			distanceFromIntervalStart += master.length();
+		}
+		
 		return (int) ((interval.length() + distanceFromIntervalStart) / master.length());
 	}
 	
