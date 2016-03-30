@@ -45,7 +45,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 
 	@SuppressWarnings("unchecked")
 	@Search()
-	public List<Observation> searchAnnotations(@OptionalParam(name = Observation.SP_SUBJECT) TokenParam patientId,
+	public List<Observation> searchAnnotations(@OptionalParam(name = Observation.SP_SUBJECT) ReferenceParam patientId,
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationTypeCode,
 			// Using StringParam because QuantityParam has a bug handling :missing
@@ -58,7 +58,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 		addMissing(params, SP_COMMENTS, comments);
 
 		if (patientId != null) {
-			params.add(Observation.SP_SUBJECT, patientId.getValue());
+			params.add(Observation.SP_SUBJECT, patientId.getIdPart());
 		}
 
 		if (observationTypeCode != null) {
@@ -94,7 +94,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 	
 	@SuppressWarnings("unchecked")
 	@Search()
-	public List<Observation> searchManualObservations(@OptionalParam(name = Observation.SP_SUBJECT) TokenParam patientId,
+	public List<Observation> searchManualObservations(@OptionalParam(name = Observation.SP_SUBJECT) ReferenceParam patientId,
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationTypeCode,
 			@RequiredParam(name = SP_METHOD) TokenParam method,
@@ -102,7 +102,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 		Params params = Params.empty();
 
 		if (patientId != null) {
-			params.add(Observation.SP_SUBJECT, patientId.getValue());
+			params.add(Observation.SP_SUBJECT, patientId.getIdPart());
 		}
 
 		if (observationTypeCode != null) {
@@ -132,7 +132,7 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 	
 
 	@Search()
-	public List<Observation> searchForPatient(@RequiredParam(name = Observation.SP_SUBJECT) TokenParam patientId,
+	public List<Observation> searchForPatient(@RequiredParam(name = Observation.SP_SUBJECT) ReferenceParam patientId,
 			@OptionalParam(name = Observation.SP_DATE) DateRangeParam dateRange,
 			@OptionalParam(name = Observation.SP_CODE) StringParam observationCode,
 			@OptionalParam(name = "-summary") StringParam summary,
@@ -144,13 +144,13 @@ public class ObservationResourceProvider extends BaseResourceProvider<Observatio
 		boolean isSummary = TRUE.equalsIgnoreCase(T5FHIRUtils.getValueOrNull(summary));
 
 		if (isSummary) {
-			return observationService.searchSummaryByPatient(patientId.getValue(), start, end);
+			return observationService.searchSummaryByPatient(patientId.getIdPart(), start, end);
 		} else if (observationCode == null) {
 			throw new InvalidRequestException("Observation type code missing.");
 		} else {
 			validateCountParameter(count);
 
-			return observationService.searchByPatient(patientId.getValue(), observationCode.getValue(), start, end,
+			return observationService.searchByPatient(patientId.getIdPart(), observationCode.getValue(), start, end,
 					getSamplingPeriodFromParam(sampleRate), sortSpec, count);
 		}
 	}

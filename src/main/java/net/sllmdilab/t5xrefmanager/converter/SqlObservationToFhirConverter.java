@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.QuantityDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.composite.SampledDataDt;
 import ca.uhn.fhir.model.dstu2.composite.SimpleQuantityDt;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
@@ -73,7 +74,7 @@ public class SqlObservationToFhirConverter {
 			}
 
 			if (deviceId != null) {
-				obs.addPerformer().setReference("Device/" + deviceId);
+				obs.setDevice(new ResourceReferenceDt("Device/" + deviceId));
 			}
 
 			obs.setId(sqlObs.getUid());
