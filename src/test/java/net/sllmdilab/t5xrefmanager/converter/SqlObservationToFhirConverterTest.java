@@ -66,7 +66,7 @@ public class SqlObservationToFhirConverterTest {
 		assertEquals(1, observations.size());
 		
 		Observation obs = observations.get(0);
-		assertEquals(MOCK_PERFORMER_ID, obs.getPerformer().get(0).getReference().getIdPart());
+		assertEquals(MOCK_PERFORMER_ID, obs.getDevice().getReference().getIdPart());
 		assertEquals(42.0, ((QuantityDt)obs.getValue()).getValue().doubleValue(), 0.000001);
 		assertEquals(MOCK_ROSETTA_DESC, obs.getCode().getText());
 		assertEquals(MOCK_CODE, obs.getCode().getCoding().get(0).getCode());
