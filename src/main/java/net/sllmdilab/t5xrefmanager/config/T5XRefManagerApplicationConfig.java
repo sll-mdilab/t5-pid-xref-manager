@@ -43,7 +43,6 @@ import ca.uhn.fhir.model.dstu2.resource.Procedure;
 import ca.uhn.fhir.model.dstu2.resource.QuestionnaireResponse;
 import ca.uhn.fhir.model.dstu2.resource.ReferralRequest;
 import net.sllmdilab.commons.converter.ObservationToT5XmlConverter;
-import net.sllmdilab.commons.converter.T5QueryToFHIRConverter;
 import net.sllmdilab.commons.exceptions.RosettaInitializationException;
 import net.sllmdilab.commons.t5.validators.RosettaValidator;
 import net.sllmdilab.t5xrefmanager.converter.SqlObservationToFhirConverter;
@@ -89,11 +88,6 @@ public class T5XRefManagerApplicationConfig {
 	@Bean
 	public ObservationToT5XmlConverter observationToT5XmlConverter() {
 		return new ObservationToT5XmlConverter();
-	}
-
-	@Bean
-	public T5QueryToFHIRConverter t5QueryToFHIRConverter() throws Exception {
-		return new T5QueryToFHIRConverter(rosettaValidator());
 	}
 
 	@Bean
