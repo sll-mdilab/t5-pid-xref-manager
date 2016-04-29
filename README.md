@@ -14,7 +14,7 @@ Assuming that Java EE 8 development kit is installed and exist on the PATH envir
 This outputs a .war-file into the `build/lib` directory.
 
 ## Database
-The application requires access to a Postgres >=v9.4 database with FHIRbase-plv8 >=v0.0.1-beta.4. Scripts for initializing the database schema can be found in the `t5-doc` project under the `sql`-folder.
+The application requires access to a Postgres >=v9.4 database with FHIRbase-plv8 >=v0.0.1-beta.4. Scripts for initializing the database schema can be found in the `t5-doc` project under the `sql`-folder. See the `README.md` of `t5-doc` for more details.
 
 ## Deployment
 
