@@ -1,0 +1,129 @@
+{
+  "hookInstance": "d1577c69-dfbe-44ad-ba5d-3e05e953b2ea",
+  "fhirServer": "https://sll-mdilab.net/fhir",
+  "hook": "cambiocds-sepsis",
+  "redirect": "https://capacity.sll-mdilab.net",
+  "patient": "5212121212",
+  "context": [
+    {
+      "resourceType": "Observation",
+      "id": "c64efcc6-17d2-4ff2-a1b5-5bb30e0d9d8a",
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.ihtsdo.org/snomed-ct",
+            "code": "86290005"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "patient/5212121212"
+      },
+      "effectiveDateTime": "2016-08-10T15:14:59+00:00",
+      "valueQuantity": {
+        "value": 16,
+        "unit": "/min"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c64efcc6-17d2-4ef2-a1b5-5bb30e0d9d8a",
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.ihtsdo.org/snomed-ct",
+            "code": "364075005"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "patient/5212121212"
+      },
+      "effectiveDateTime": "2016-08-10T15:14:59+00:00",
+      "valueQuantity": {
+        "value": 78,
+        "unit": "/min"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c64efcc6-17d2-4ef2-a1b5-5bb30e0d9d8a",
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.ihtsdo.org/snomed-ct",
+            "code": "271649006"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "patient/5212121212"
+      },
+      "effectiveDateTime": "2016-08-10T15:14:59+00:00",
+      "valueQuantity": {
+        "value": 97,
+        "unit": "mm[HG]"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c64efcc6-17d2-4ef2-a1b5-5ba30e0d9d8a",
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.ihtsdo.org/snomed-ct",
+            "code": "703421000 "
+          }
+        ]
+      },
+      "subject": {
+        "reference": "patient/5212121212"
+      },
+      "effectiveDateTime": "2016-08-10T15:14:59+00:00",
+      "valueQuantity": {
+        "value": 37,
+        "unit": "Cel"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c64efcc6-17d2-4ef2-a1a5-5ba30e0d9d8a",
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.ihtsdo.org/snomed-ct",
+            "code": "248241002"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "patient/5212121212"
+      },
+      "effectiveDateTime": "2016-08-10T15:14:59+00:00",
+      "valueQuantity": {
+        "value": 2,
+        "unit": ""
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c64efcc6-17d2-4ef2-a1a5-5ba30e0d9d8a",
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.ihtsdo.org/snomed-ct",
+            "code": "364202003"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "patient/5212121212"
+      },
+      "effectiveDateTime": "2016-08-10T15:14:59+00:00",
+      "valueQuantity": {
+        "value": 1200,
+        "unit": "mL"
+      }
+    }
+  ]
+}
