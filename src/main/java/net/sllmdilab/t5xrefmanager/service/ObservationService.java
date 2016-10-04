@@ -1,5 +1,8 @@
 package net.sllmdilab.t5xrefmanager.service;
 
+import static net.sllmdilab.t5xrefmanager.resourceprovider.ObservationResourceProvider.MODIFIER_MISSING;
+import static net.sllmdilab.t5xrefmanager.resourceprovider.ObservationResourceProvider.SP_METHOD;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,9 +36,6 @@ import net.sllmdilab.t5xrefmanager.resource.T5DeviceUseStatement;
 import net.sllmdilab.t5xrefmanager.util.TimeShift;
 import net.sllmdilab.t5xrefmanager.util.TimeShift.Interval;
 
-import static net.sllmdilab.t5xrefmanager.resourceprovider.ObservationResourceProvider.MODIFIER_MISSING;
-import static net.sllmdilab.t5xrefmanager.resourceprovider.ObservationResourceProvider.SP_METHOD;
-
 public class ObservationService {
 	@Autowired
 	private FhirContext fhirContext;
@@ -48,7 +48,7 @@ public class ObservationService {
 
 	@Autowired
 	private FhirbaseResourceDao<T5DeviceUseStatement> deviceUseStatementDao;
-	
+
 	@Autowired
 	private FhirbaseResourceDao<Observation> fhirbaseObservationDao;
 
@@ -61,38 +61,40 @@ public class ObservationService {
 	}
 
 	/**
-	 * Limit the given list of observations to a specified approximate sample interval. At most one sample will be
-	 * returned within each interval.
+	 * Limit the given list of observations to a specified approximate sample
+	 * interval. At most one sample will be returned within each interval.
 	 * 
-	 * No observations are modified. For each interval, the last observation (in time) within that interval will be
-	 * returned. No guarantee of the order of observations is made.
+	 * No observations are modified. For each interval, the last observation (in
+	 * time) within that interval will be returned. No guarantee of the order of
+	 * observations is made.
 	 * 
 	 * @param observations
 	 *            A list of observations.
 	 * @param start
-	 *            Start of the interval for which observations should be returned.
+	 *            Start of the interval for which observations should be
+	 *            returned.
 	 * @param end
 	 *            End of the interval for which observations should be returned.
 	 * @param samplingPeriodMilli
-	 *            Approximate number of milliseconds between samples. A value of 0 means this method will just return
-	 *            the original list.
-	 * @return A filtered list of observations containing a subset of those supplied in the observations parameter.
+	 *            Approximate number of milliseconds between samples. A value of
+	 *            0 means this method will just return the original list.
+	 * @return A filtered list of observations containing a subset of those
+	 *         supplied in the observations parameter.
 	 */
 	private List<Observation> limitSamplingPeriod(List<Observation> observations, Date start, Date end,
 			int samplingPeriodMilli) {
 		if (samplingPeriodMilli == 0) {
 			return observations;
 		}
-		
+
 		observations.sort(new ObservationTimestampComparator());
-		
+
 		List<Observation> result = new ArrayList<>();
 		long firstIntervalEnd = (start.toInstant().toEpochMilli() / samplingPeriodMilli + 1) * samplingPeriodMilli;
 		for (long currentIntervalEnd = firstIntervalEnd; currentIntervalEnd <= end.toInstant()
 				.toEpochMilli(); currentIntervalEnd += samplingPeriodMilli) {
 			Observation nearestObs = findNearestObservation(observations, currentIntervalEnd);
-			if (nearestObs != null
-					&& isAfterPeriodStart(samplingPeriodMilli, currentIntervalEnd, nearestObs)) {
+			if (nearestObs != null && isAfterPeriodStart(samplingPeriodMilli, currentIntervalEnd, nearestObs)) {
 				result.add(nearestObs);
 			}
 		}
@@ -106,18 +108,18 @@ public class ObservationService {
 
 	private static class ObservationTimestampComparator implements Comparator<Observation> {
 		private final SortOrderEnum sortOrder;
-		
+
 		public ObservationTimestampComparator() {
 			sortOrder = SortOrderEnum.ASC;
 		}
-		
+
 		public ObservationTimestampComparator(SortOrderEnum sortOrder) {
 			this.sortOrder = sortOrder;
 		}
-		
+
 		@Override
 		public int compare(Observation o1, Observation o2) {
-			if(sortOrder == SortOrderEnum.ASC) {
+			if (sortOrder == SortOrderEnum.ASC) {
 				return Long.compare(getTimestamp(o1.getEffective()), getTimestamp(o2.getEffective()));
 			} else {
 				return Long.compare(getTimestamp(o2.getEffective()), getTimestamp(o1.getEffective()));
@@ -128,8 +130,10 @@ public class ObservationService {
 	/**
 	 * @param observations
 	 *            A list of observations sorted according to
-	 * @param periodEndMilli A timestamp in the format of Instant.toEpochMilli().
-	 * @return The observation with the greatest timestamp <= periodEndMilli or null if no such observation exists.
+	 * @param periodEndMilli
+	 *            A timestamp in the format of Instant.toEpochMilli().
+	 * @return The observation with the greatest timestamp <= periodEndMilli or
+	 *         null if no such observation exists.
 	 */
 	private Observation findNearestObservation(List<Observation> observations, long periodEndMilli) {
 		if (observations.isEmpty()) {
@@ -214,14 +218,16 @@ public class ObservationService {
 	}
 
 	/**
-	 * Fetch observation type codes for observations occurring while a patient is associated to a device according to a
-	 * DeviceUseStatement in the database.
+	 * Fetch observation type codes for observations occurring while a patient
+	 * is associated to a device according to a DeviceUseStatement in the
+	 * database.
 	 * 
 	 * @param patientId
 	 * @param start
 	 * @param end
-	 * @return Observations containing only the type codes themselves from all observations for the given time period
-	 *         and patient. Only one observation is returned for each different code.
+	 * @return Observations containing only the type codes themselves from all
+	 *         observations for the given time period and patient. Only one
+	 *         observation is returned for each different code.
 	 */
 	private List<Observation> performPatientIdentificationForSummary(String patientId, Date start, Date end) {
 		List<IResource> deviceUseStatements = deviceUseStatementDao.search(
@@ -246,35 +252,32 @@ public class ObservationService {
 	public List<Observation> searchByPatient(String patientId, String observationTypeCode, Date start, Date end,
 			int sampleRateMilli, SortSpec sortSpec, Integer count) {
 		List<Observation> result;
+		result = searchFromFhirbase(patientId, observationTypeCode, start, end, count);
 
 		if (shouldTimeShift(patientId)) {
 			result = timeshiftedSearch(patientId, IdType.PATIENT, observationTypeCode, start, end);
 		} else {
 			result = performPatientIdentification(patientId, observationTypeCode, start, end);
 		}
-		
+
 		result.addAll(searchFromFhirbase(patientId, observationTypeCode, start, end, count));
-		
+
 		return sortAndLimitCount(limitSamplingPeriod(result, start, end, sampleRateMilli), sortSpec, count);
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public List<Observation> searchFromFhirbase(String patientId, String observationTypeCode, Date start, Date end, Integer count) {
-		Params params = Params
-			.of(Observation.SP_SUBJECT, patientId)
-			.add(Observation.SP_CODE, observationTypeCode)
-			.add(Observation.SP_DATE, "ge", start)
-			.add(Observation.SP_DATE, "le", end)
-			.add(SP_METHOD + MODIFIER_MISSING, true)
-			.add(Observation.SP_VALUE_QUANTITY + MODIFIER_MISSING, false);
-		
-		if(count != null) {
+	public List<Observation> searchFromFhirbase(String patientId, String observationTypeCode, Date start, Date end,
+			Integer count) {
+		Params params = Params.of(Observation.SP_SUBJECT, patientId).add(Observation.SP_CODE, observationTypeCode)
+				.add(Observation.SP_DATE, "ge", start).add(Observation.SP_DATE, "le", end)
+				.add(SP_METHOD + MODIFIER_MISSING, true).add(Observation.SP_VALUE_QUANTITY + MODIFIER_MISSING, false);
+
+		if (count != null) {
 			params.add(FhirbaseResourceDao.SP_COUNT, count);
 		}
-
 		return (List<Observation>) (List<? extends IResource>) fhirbaseObservationDao.search(params);
 	}
-	
+
 	/**
 	 * This method changes the order of the incoming arguments.
 	 * 
@@ -284,16 +287,17 @@ public class ObservationService {
 	 * @return
 	 */
 	public List<Observation> sortAndLimitCount(List<Observation> observations, SortSpec sortSpec, Integer count) {
-		if(sortSpec != null) {
+
+		if (sortSpec != null) {
 			observations.sort(new ObservationTimestampComparator(sortSpec.getOrder()));
 		}
-		
-		if(count != null) {
+
+		if (count != null) {
 			return observations.subList(0, Math.min(count, observations.size()));
 		}
-		
+
 		return observations;
-		
+
 	}
 
 	public List<Observation> searchByDevice(String deviceId, String observationCode, Date start, Date end,
